@@ -23,7 +23,11 @@ if uploaded_file:
     if "saldos_acumulados" not in st.session_state:
         st.session_state.saldos_acumulados = {produto: 0 for produto in df_sistema["IdentProduto"]}
 
-    df_sistema["opcao"] = df_sistema["IdentProduto"] + " - " + df_sistema["Descriçao"]
+   
+_sistema = df[["IdentProduto", "Descriçao", "Quantidade", "ClassificABC", "Prateleira"]].copy()
+
+df_sistema["opcao"] = df_sistema["IdentProduto"] + " - " + df_sistema["Descriçao"] + " - " + df_sistema["Prateleira"]
+
     mapa_opcao_para_codigo = dict(zip(df_sistema["opcao"], df_sistema["IdentProduto"]))
 
     opcao_selecionada = st.selectbox("Selecione o produto", df_sistema["opcao"])
@@ -84,3 +88,4 @@ if uploaded_file:
             file_name="relatorio_divergencias.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+

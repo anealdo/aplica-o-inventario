@@ -10,7 +10,7 @@ uploaded_file = st.file_uploader("Faça upload do arquivo de inventário do sist
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file, sheet_name="Planilha1", engine="openpyxl")
-    df_sistema = df[["IdentProduto", "Descrição", "Quantidade", "ClassificABC"]].copy()
+    df_sistema = df[["IdentProduto", "Descriçao", "Quantidade", "ClassificABC"]].copy()
 
     st.subheader("Dados do Sistema")
     st.dataframe(df_sistema)
@@ -66,3 +66,4 @@ if uploaded_file:
             file_name="relatorio_divergencias.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+

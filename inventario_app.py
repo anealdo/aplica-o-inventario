@@ -12,8 +12,9 @@ if uploaded_file:
 
     df["IdentProduto"] = df["IdentProduto"].astype(str)
     df["Descriçao"] = df["Descriçao"].astype(str)
+    df["Prateleira"] = df["Prateleira"].astype(str)
 
-    df_sistema = df[["IdentProduto", "Descriçao", "Quantidade", "ClassificABC"]].copy()
+    df_sistema = df[["IdentProduto", "Descriçao", "Quantidade", "ClassificABC", "Prateleira"]].copy()
 
     st.subheader("Dados do Sistema")
     st.dataframe(df_sistema)
@@ -23,10 +24,11 @@ if uploaded_file:
     if "saldos_acumulados" not in st.session_state:
         st.session_state.saldos_acumulados = {produto: 0 for produto in df_sistema["IdentProduto"]}
 
-   
-_sistema = df[["IdentProduto", "Descriçao", "Quantidade", "ClassificABC", "Prateleira"]].copy()
-
-df_sistema["opcao"] = df_sistema["IdentProduto"] + " - " + df_sistema["Descriçao"] + " - " + df_sistema["Prateleira"]
+    df_sistema["opcao"] = (
+        df_sistema["IdentProduto"] + " - " +
+        df_sistema["Descriçao"] + " - Prateleira: " +
+        df_sistema["Prateleira"]
+    )
 
     mapa_opcao_para_codigo = dict(zip(df_sistema["opcao"], df_sistema["IdentProduto"]))
 
@@ -88,4 +90,3 @@ df_sistema["opcao"] = df_sistema["IdentProduto"] + " - " + df_sistema["Descriça
             file_name="relatorio_divergencias.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-

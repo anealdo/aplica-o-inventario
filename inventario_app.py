@@ -1,6 +1,6 @@
 import pandas as pd
-import plotly.express as px
 import streamlit as st
+import plotly.express as px
 from io import BytesIO
 
 st.title("Sistema de Inventário - Acuracidade e Divergências")
@@ -9,7 +9,7 @@ uploaded_file = st.file_uploader("Faça upload do arquivo de inventário do sist
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file, sheet_name="Planilha1", engine="openpyxl")
-    df_sistema = df[["IdentProduto", "Quantidade"]].copy()
+    df_sistema = df[["IdentProduto", "Descriçao", "Quantidade", "ClassificABC"]].copy()
 
     st.subheader("Dados do Sistema")
     st.dataframe(df_sistema)
@@ -25,7 +25,10 @@ if uploaded_file:
         df_sistema.dropna(subset=["SaldoFisico"], inplace=True)
         df_sistema["Divergencia"] = df_sistema["SaldoFisico"] - df_sistema["Quantidade"]
 
-        df_divergente = df_sistema[df_sistema["Divergencia"] != 0]
+        df_divergente = df_sistema[df_sistema["Divergencia"] != 0][[
+            "IdentProduto", "Descriçao", "Quantidade", "SaldoFisico", "Divergencia", "ClassificABC"
+        ]]
+
         st.subheader("Relatório de Divergências")
         st.dataframe(df_divergente)
 

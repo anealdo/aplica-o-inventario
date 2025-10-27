@@ -64,8 +64,7 @@ if uploaded_file:
         output.seek(0)
         wb = load_workbook(output)
         ws = wb["Divergencias"]
-        img = Image(grafico_path)
-        ws.add_image(img, "A10")
+       
 
         final_output = BytesIO()
         wb.save(final_output)
@@ -78,3 +77,4 @@ if uploaded_file:
         )
 
         os.remove(grafico_path)
+

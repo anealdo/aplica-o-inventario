@@ -18,13 +18,6 @@ Esta aplicação permite comparar os saldos de estoque registrados no sistema co
 - Exibição de gráfico de acuracidade geral diretamente na interface web
 - Exportação do relatório de divergências em formato Excel
 
-## Funcionalidades Adicionadas
-
-- Seleção de produto com exibição de código e descrição (ex: `A001 - Produto A`)
-- Inserção acumulativa de saldo físico por produto
-- Exibição dos saldos físicos acumulados em formato de tabela com descrição
-- Geração de relatório de divergências e gráfico de acuracidade com base nos saldos acumulados
-
 ## Requisitos
 
 - Python 3.8+

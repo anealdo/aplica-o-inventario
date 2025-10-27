@@ -45,5 +45,3 @@ if st.session_state.df_sistema is not None:
         st.subheader("Relatório de Divergências")
         df_divergente = df_sistema[df_sistema["Divergencia"] != 0]
         st.dataframe(df_divergente)
-
-

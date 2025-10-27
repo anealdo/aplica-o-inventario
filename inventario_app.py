@@ -1,47 +1,55 @@
-import streamlit as st
 import pandas as pd
+import plotly.express as px
+import streamlit as st
+from io import BytesIO
 
-st.title("Sistema de Inventário - Comparação de Saldos")
+st.title("Sistema de Inventário - Acuracidade e Divergências")
 
-# Inicializar estado da sessão
-if "df_sistema" not in st.session_state:
-    st.session_state.df_sistema = None
-    st.session_state.saldo_fisico = {}
+uploaded_file = st.file_uploader("Faça upload do arquivo de inventário do sistema (formato .xlsx)", type=["xlsx"])
 
-# Upload do arquivo Excel
-if st.session_state.df_sistema is None:
-    uploaded_file = st.file_uploader("Faça upload do arquivo de inventário do sistema (formato .xlsx)", type=["xlsx"])
-    if uploaded_file:
-        df = pd.read_excel(uploaded_file, sheet_name="Planilha1", engine="openpyxl")
-        st.session_state.df_sistema = df[["IdentProduto", "Quantidade"]].copy()
-        st.success("Arquivo carregado com sucesso. Você pode iniciar o inventário.")
-
-# Botão para iniciar novo inventário
-if st.session_state.df_sistema is not None:
-    if st.button("Novo Inventário"):
-        st.session_state.df_sistema = None
-        st.session_state.saldo_fisico = {}
-        st.query_params.clear()
-        st.success("Inventário reiniciado. Faça upload de um novo arquivo.")
-
-# Se os dados do sistema estiverem carregados
-if st.session_state.df_sistema is not None:
-    df_sistema = st.session_state.df_sistema.copy()
+if uploaded_file:
+    df = pd.read_excel(uploaded_file, sheet_name="Planilha1", engine="openpyxl")
+    df_sistema = df[["IdentProduto", "Quantidade"]].copy()
 
     st.subheader("Dados do Sistema")
     st.dataframe(df_sistema)
 
     st.subheader("Inserir Saldo Físico")
-    with st.form("form_saldo_fisico"):
-        for produto in df_sistema["IdentProduto"].unique():
-            saldo = st.number_input(f"Saldo físico para {produto}", min_value=0, step=1, key=produto)
-            st.session_state.saldo_fisico[produto] = saldo
-        submitted = st.form_submit_button("Comparar Saldos")
+    saldo_fisico = {}
+    for produto in df_sistema["IdentProduto"].unique():
+        saldo = st.number_input(f"Saldo físico para {produto}", min_value=0, step=1, key=produto)
+        saldo_fisico[produto] = saldo
 
-    if submitted:
-        df_sistema["SaldoFisico"] = df_sistema["IdentProduto"].map(st.session_state.saldo_fisico)
+    if st.button("Gerar Relatório"):
+        df_sistema["SaldoFisico"] = df_sistema["IdentProduto"].map(saldo_fisico)
+        df_sistema.dropna(subset=["SaldoFisico"], inplace=True)
         df_sistema["Divergencia"] = df_sistema["SaldoFisico"] - df_sistema["Quantidade"]
 
-        st.subheader("Relatório de Divergências")
         df_divergente = df_sistema[df_sistema["Divergencia"] != 0]
+        st.subheader("Relatório de Divergências")
         st.dataframe(df_divergente)
+
+        df_sistema["Acuracidade"] = df_sistema.apply(
+            lambda row: 100 if row["Quantidade"] == row["SaldoFisico"] else round(100 * min(row["Quantidade"], row["SaldoFisico"]) / max(row["Quantidade"], row["SaldoFisico"]), 2),
+            axis=1
+        )
+        acuracidade_geral = round(df_sistema["Acuracidade"].mean(), 2)
+
+        fig = px.pie(
+            names=["Acurado", "Divergente"],
+            values=[acuracidade_geral, 100 - acuracidade_geral],
+            title="Acuracidade Geral do Estoque",
+            hole=0.4
+        )
+        st.subheader("Acuracidade Geral do Estoque")
+        st.plotly_chart(fig, use_container_width=True)
+
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df_divergente.to_excel(writer, index=False, sheet_name='Divergencias')
+        st.download_button(
+            label="Baixar Relatório de Divergências em Excel",
+            data=output.getvalue(),
+            file_name="relatorio_divergencias.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )

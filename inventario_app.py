@@ -1,4 +1,3 @@
-
 import pandas as pd
 import streamlit as st
 import plotly.express as px
@@ -28,7 +27,8 @@ if uploaded_file:
         st.success(f"Saldo atualizado para {produto_selecionado}: {st.session_state.saldos_acumulados[produto_selecionado]}")
 
     st.subheader("Saldos Físicos Acumulados")
-    st.write(st.session_state.saldos_acumulados)
+    df_saldos = pd.DataFrame(list(st.session_state.saldos_acumulados.items()), columns=["IdentProduto", "SaldoFisico"])
+    st.dataframe(df_saldos)
 
     if st.button("Gerar Relatório"):
         df_sistema["SaldoFisico"] = df_sistema["IdentProduto"].map(st.session_state.saldos_acumulados)
@@ -36,7 +36,7 @@ if uploaded_file:
         df_sistema["Divergencia"] = df_sistema["SaldoFisico"] - df_sistema["Quantidade"]
 
         df_divergente = df_sistema[df_sistema["Divergencia"] != 0][[
-            "IdentProduto", "Descrição", "Quantidade", "SaldoFisico", "Divergencia", "ClassificABC"
+            "IdentProduto", "Descriçao", "Quantidade", "SaldoFisico", "Divergencia", "ClassificABC"
         ]]
 
         st.subheader("Relatório de Divergências")
@@ -66,4 +66,3 @@ if uploaded_file:
             file_name="relatorio_divergencias.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-

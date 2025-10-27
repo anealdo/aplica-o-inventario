@@ -49,8 +49,10 @@ if uploaded_file:
         st.subheader("Acuracidade Geral do Estoque")
         st.plotly_chart(fig, use_container_width=True)
 
+        # Salvar gráfico como imagem temporária
         fig.write_image("grafico_acuracidade_temp.png")
 
+        # Gerar relatório Excel com gráfico
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df_divergente.to_excel(writer, index=False, sheet_name='Divergencias')

@@ -4,6 +4,8 @@ import plotly.express as px
 from io import BytesIO
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image
+import tempfile
+import os
 
 st.title("Sistema de Inventário - Acuracidade e Divergências")
 
@@ -49,8 +51,10 @@ if uploaded_file:
         st.subheader("Acuracidade Geral do Estoque")
         st.plotly_chart(fig, use_container_width=True)
 
-        # Salvar gráfico como imagem temporária
-        fig.write_image("grafico_acuracidade_temp.png")
+        # Salvar gráfico como imagem temporária usando tempfile
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+            fig.write_image(tmpfile.name)
+            grafico_path = tmpfile.name
 
         # Gerar relatório Excel com gráfico
         output = BytesIO()
@@ -60,7 +64,7 @@ if uploaded_file:
         output.seek(0)
         wb = load_workbook(output)
         ws = wb["Divergencias"]
-        img = Image("grafico_acuracidade_temp.png")
+        img = Image(grafico_path)
         ws.add_image(img, "A10")
 
         final_output = BytesIO()
@@ -72,3 +76,5 @@ if uploaded_file:
             file_name="relatorio_divergencias_com_grafico.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
+        os.remove(grafico_path)

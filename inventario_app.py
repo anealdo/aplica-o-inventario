@@ -26,7 +26,7 @@ if uploaded_file:
 
     df_sistema["opcao"] = (
         df_sistema["IdentProduto"] + " - " +
-        df_sistema["Descriçao"] + " - Prateleira: " +
+        df_sistema["Descriçao"] + " - " +
         df_sistema["Prateleira"]
     )
 
@@ -90,3 +90,4 @@ if uploaded_file:
             file_name="relatorio_divergencias.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+

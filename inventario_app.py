@@ -71,12 +71,40 @@ if uploaded_file:
         st.subheader("Acuracidade Geral do Estoque")
         st.plotly_chart(fig, use_container_width=True)
 
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df_divergente.to_excel(writer, index=False, sheet_name='Divergencias')
+        import plotly.express as px
+from openpyxl import load_workbook
+from openpyxl.drawing.image import Image
+
+# Gerar gráfico de acuracidade
+fig.write_image("grafico_temp.png")  # salva o gráfico como imagem temporária
+
+# Gerar relatório Excel com gráfico
+output = BytesIO()
+with pd.ExcelWriter(output, engine='openpyxl') as writer:
+    df_divergente.to_excel(writer, index=False, sheet_name='Divergencias')
+
+# Reabrir workbook e inserir imagem
+output.seek(0)
+wb = load_workbook(output)
+ws = wb["Divergencias"]
+img = Image("grafico_temp.png")
+ws.add_image(img, "A10")  # posição onde o gráfico será inserido
+
+# Salvar arquivo final
+final_output = BytesIO()
+wb.save(final_output)
+
+# Botão de download
+st.download_button(
+    label="Baixar Relatório de Divergências em Excel",
+    data=final_output.getvalue(),
+    file_name="relatorio_divergencias_com_grafico.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
         st.download_button(
             label="Baixar Relatório de Divergências em Excel",
             data=output.getvalue(),
             file_name="relatorio_divergencias.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+

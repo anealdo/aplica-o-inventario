@@ -10,7 +10,6 @@ uploaded_file = st.file_uploader("Faça upload do arquivo de inventário do sist
 if uploaded_file:
     df = pd.read_excel(uploaded_file, sheet_name="Planilha1", engine="openpyxl")
 
-    # Garantir que as colunas sejam string para evitar erros de concatenação
     df["IdentProduto"] = df["IdentProduto"].astype(str)
     df["Descriçao"] = df["Descriçao"].astype(str)
 
@@ -24,18 +23,23 @@ if uploaded_file:
     if "saldos_acumulados" not in st.session_state:
         st.session_state.saldos_acumulados = {produto: 0 for produto in df_sistema["IdentProduto"]}
 
-    # Criar opções combinadas para exibição
     df_sistema["opcao"] = df_sistema["IdentProduto"] + " - " + df_sistema["Descriçao"]
     mapa_opcao_para_codigo = dict(zip(df_sistema["opcao"], df_sistema["IdentProduto"]))
 
     opcao_selecionada = st.selectbox("Selecione o produto", df_sistema["opcao"])
     produto_selecionado = mapa_opcao_para_codigo[opcao_selecionada]
 
-    quantidade_inserida = st.number_input("Quantidade a adicionar", min_value=0, step=1)
+    quantidade_inserida = st.number_input("Quantidade a adicionar ou retirar", min_value=0, step=1)
 
-    if st.button("Adicionar ao saldo"):
-        st.session_state.saldos_acumulados[produto_selecionado] += quantidade_inserida
-        st.success(f"Saldo atualizado para {produto_selecionado}: {st.session_state.saldos_acumulados[produto_selecionado]}")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Adicionar ao saldo"):
+            st.session_state.saldos_acumulados[produto_selecionado] += quantidade_inserida
+            st.success(f"Saldo atualizado para {produto_selecionado}: {st.session_state.saldos_acumulados[produto_selecionado]}")
+    with col2:
+        if st.button("Retirar do saldo"):
+            st.session_state.saldos_acumulados[produto_selecionado] -= quantidade_inserida
+            st.success(f"Saldo atualizado para {produto_selecionado}: {st.session_state.saldos_acumulados[produto_selecionado]}")
 
     st.subheader("Saldos Físicos Acumulados")
     df_saldos = pd.DataFrame(list(st.session_state.saldos_acumulados.items()), columns=["IdentProduto", "SaldoFisico"])

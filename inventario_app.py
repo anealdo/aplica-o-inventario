@@ -19,7 +19,13 @@ if uploaded_file:
     if "saldos_acumulados" not in st.session_state:
         st.session_state.saldos_acumulados = {produto: 0 for produto in df_sistema["IdentProduto"]}
 
-    produto_selecionado = st.selectbox("Selecione o produto", df_sistema["IdentProduto"])
+    # Exibir código + descrição na seleção
+    df_sistema["opcao"] = df_sistema["IdentProduto"] + " - " + df_sistema["Descriçao"]
+    mapa_opcao_para_codigo = dict(zip(df_sistema["opcao"], df_sistema["IdentProduto"]))
+
+    opcao_selecionada = st.selectbox("Selecione o produto", df_sistema["opcao"])
+    produto_selecionado = mapa_opcao_para_codigo[opcao_selecionada]
+
     quantidade_inserida = st.number_input("Quantidade a adicionar", min_value=0, step=1)
 
     if st.button("Adicionar ao saldo"):

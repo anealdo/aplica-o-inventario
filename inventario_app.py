@@ -9,6 +9,11 @@ uploaded_file = st.file_uploader("Faça upload do arquivo de inventário do sist
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file, sheet_name="Planilha1", engine="openpyxl")
+
+    # Garantir que as colunas sejam string para evitar erros de concatenação
+    df["IdentProduto"] = df["IdentProduto"].astype(str)
+    df["Descriçao"] = df["Descriçao"].astype(str)
+
     df_sistema = df[["IdentProduto", "Descriçao", "Quantidade", "ClassificABC"]].copy()
 
     st.subheader("Dados do Sistema")
@@ -19,7 +24,7 @@ if uploaded_file:
     if "saldos_acumulados" not in st.session_state:
         st.session_state.saldos_acumulados = {produto: 0 for produto in df_sistema["IdentProduto"]}
 
-    # Exibir código + descrição na seleção
+    # Criar opções combinadas para exibição
     df_sistema["opcao"] = df_sistema["IdentProduto"] + " - " + df_sistema["Descriçao"]
     mapa_opcao_para_codigo = dict(zip(df_sistema["opcao"], df_sistema["IdentProduto"]))
 
@@ -51,7 +56,8 @@ if uploaded_file:
         st.dataframe(df_divergente)
 
         df_sistema["Acuracidade"] = df_sistema.apply(
-            lambda row: 100 if row["Quantidade"] == row["SaldoFisico"] else round(100 * min(row["Quantidade"], row["SaldoFisico"]) / max(row["Quantidade"], row["SaldoFisico"]), 2),
+            lambda row: 100 if row["Quantidade"] == row["SaldoFisico"]
+            else round(100 * min(row["Quantidade"], row["SaldoFisico"]) / max(row["Quantidade"], row["SaldoFisico"]), 2),
             axis=1
         )
         acuracidade_geral = round(df_sistema["Acuracidade"].mean(), 2)

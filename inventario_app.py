@@ -21,7 +21,7 @@ if st.session_state.df_sistema is not None:
     if st.button("Novo Inventário"):
         st.session_state.df_sistema = None
         st.session_state.saldo_fisico = {}
-        st.experimental_set_query_params(reset=True)
+        st.query_params.clear()
         st.success("Inventário reiniciado. Faça upload de um novo arquivo.")
 
 # Se os dados do sistema estiverem carregados
@@ -45,3 +45,5 @@ if st.session_state.df_sistema is not None:
         st.subheader("Relatório de Divergências")
         df_divergente = df_sistema[df_sistema["Divergencia"] != 0]
         st.dataframe(df_divergente)
+
+

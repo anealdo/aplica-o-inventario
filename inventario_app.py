@@ -28,6 +28,8 @@ if uploaded_file:
 
     st.subheader("Saldos Físicos Acumulados")
     df_saldos = pd.DataFrame(list(st.session_state.saldos_acumulados.items()), columns=["IdentProduto", "SaldoFisico"])
+    df_saldos = df_saldos.merge(df_sistema[["IdentProduto", "Descriçao"]], on="IdentProduto", how="left")
+    df_saldos = df_saldos[["IdentProduto", "Descriçao", "SaldoFisico"]]
     st.dataframe(df_saldos)
 
     if st.button("Gerar Relatório"):

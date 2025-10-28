@@ -5,14 +5,6 @@ from io import BytesIO
 
 st.title("Sistema de Inventário - Acuracidade e Divergências")
 
-st.subheader("Restaurar Saldos Físicos de Arquivo")
-arquivo_saldos = st.file_uploader("Carregar arquivo de saldos salvos (.xlsx)", type=["xlsx"], key="saldos")
-
-if arquivo_saldos:
-    df_saldos_restaurado = pd.read_excel(arquivo_saldos, sheet_name="SaldosAcumulados", engine="openpyxl")
-    st.session_state.saldos_acumulados = dict(zip(df_saldos_restaurado["IdentProduto"], df_saldos_restaurado["SaldoFisico"]))
-    st.success("Saldos restaurados com sucesso!")
-
 uploaded_file = st.file_uploader("Faça upload do arquivo de inventário do sistema (formato .xlsx)", type=["xlsx"])
 
 if uploaded_file:
@@ -46,9 +38,13 @@ if uploaded_file:
     quantidade_inserida = st.number_input("Quantidade a adicionar ou retirar", min_value=0, step=1)
 
     col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Adicionar ao saldo"):
-            st.session_state.saldos_acumulados[produto_selecionado] += quantidade_inserida
+    with col2:
+    if st.button("Retirar do saldo"):
+        saldo_atual = st.session_state.saldos_acumulados[produto_selecionado]
+        if quantidade_inserida > saldo_atual:
+            st.warning(f"Não é possível retirar {quantidade_inserida}. Saldo atual é {saldo_atual}.")
+        else:
+            st.session_state.saldos_acumulados[produto_selecionado] -= quantidade_inserida
             st.success(f"Saldo atualizado para {produto_selecionado}: {st.session_state.saldos_acumulados[produto_selecionado]}")
     with col2:
         if st.button("Retirar do saldo"):
@@ -60,6 +56,16 @@ if uploaded_file:
     df_saldos = df_saldos.merge(df_sistema[["IdentProduto", "Descriçao"]], on="IdentProduto", how="left")
     df_saldos = df_saldos[["IdentProduto", "Descriçao", "SaldoFisico"]]
     st.dataframe(df_saldos)
+
+    output = BytesIO()
+df_saldos.to_excel(output, index=False, sheet_name='SaldosAcumulados', engine='openpyxl')
+
+st.download_button(
+    label="Baixar Saldos Físicos em Excel",
+    data=output.getvalue(),
+    file_name="saldos_atualizados.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 
     if st.button("Gerar Relatório"):
         df_sistema["SaldoFisico"] = df_sistema["IdentProduto"].map(st.session_state.saldos_acumulados)
@@ -98,5 +104,3 @@ if uploaded_file:
             file_name="relatorio_divergencias.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-
-

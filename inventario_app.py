@@ -47,9 +47,19 @@ if uploaded_file:
 
     mapa_opcao_para_codigo = dict(zip(df_sistema["opcao"], df_sistema["IdentProduto"]))
 
-    opcao_selecionada = st.selectbox("Selecione o produto", df_sistema["opcao"])
-    produto_selecionado = mapa_opcao_para_codigo[opcao_selecionada]
+    # Seleção de produto com memória da última escolha
+    ultima_opcao = st.session_state.get("ultima_opcao_selecionada", df_sistema["opcao"].iloc[0])
+    if ultima_opcao not in df_sistema["opcao"].values:
+        ultima_opcao = df_sistema["opcao"].iloc[0]
 
+    opcao_selecionada = st.selectbox(
+        "Selecione o produto",
+        df_sistema["opcao"],
+        index=df_sistema["opcao"].tolist().index(ultima_opcao)
+    )
+    st.session_state.ultima_opcao_selecionada = opcao_selecionada
+
+    produto_selecionado = mapa_opcao_para_codigo[opcao_selecionada]
     quantidade_inserida = st.number_input("Quantidade a adicionar ou retirar", min_value=0, step=1)
 
     col1, col2 = st.columns(2)
@@ -119,3 +129,4 @@ if uploaded_file:
             file_name="relatorio_divergencias.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+

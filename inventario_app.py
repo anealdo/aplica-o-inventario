@@ -30,11 +30,24 @@ if uploaded_file:
     if "saldos_acumulados" not in st.session_state:
         st.session_state.saldos_acumulados = {produto: 0 for produto in df_sistema["IdentProduto"]}
 
-    # Interface para inserir saldo físico
-    df_sistema["opcao"] = df_sistema["IdentProduto"] + " - " + df_sistema["Descriçao"] + " - " + df_sistema["Prateleira"]
-    mapa_opcao_para_codigo = dict(zip(df_sistema["opcao"], df_sistema["IdentProduto"]))
+    # Filtro por Prateleira antes da seleção de produto
+    prateleiras_unicas = ["Todas"] + sorted(df_sistema["Prateleira"].unique().tolist())
+    prateleira_selecionada = st.selectbox("Filtrar por Prateleira", prateleiras_unicas, key="filtro_prateleira")
 
-    opcao_selecionada = st.selectbox("Selecione o produto", df_sistema["opcao"], key="produto_select")
+    # Exibir tabela com itens da prateleira selecionada
+    if prateleira_selecionada != "Todas":
+        df_filtrado = df_sistema[df_sistema["Prateleira"] == prateleira_selecionada]
+    else:
+        df_filtrado = df_sistema.copy()
+
+    st.subheader("Itens na Prateleira Selecionada")
+    st.dataframe(df_filtrado)
+
+    # Interface para inserir saldo físico
+    df_filtrado["opcao"] = df_filtrado["IdentProduto"] + " - " + df_filtrado["Descriçao"] + " - " + df_filtrado["Prateleira"]
+    mapa_opcao_para_codigo = dict(zip(df_filtrado["opcao"], df_filtrado["IdentProduto"]))
+
+    opcao_selecionada = st.selectbox("Selecione o produto", df_filtrado["opcao"], key="produto_select")
     produto_selecionado = mapa_opcao_para_codigo[opcao_selecionada]
     quantidade_inserida = st.number_input("Quantidade a adicionar ou retirar", min_value=0, step=1, key="quantidade_input")
 
@@ -51,10 +64,6 @@ if uploaded_file:
             else:
                 st.session_state.saldos_acumulados[produto_selecionado] = saldo_atual - quantidade_inserida
                 st.success(f"Saldo atualizado para {produto_selecionado}: {st.session_state.saldos_acumulados[produto_selecionado]}")
-
-    # Filtro por Prateleira
-    prateleiras_unicas = ["Todas"] + sorted(df_sistema["Prateleira"].unique().tolist())
-    prateleira_selecionada = st.selectbox("Filtrar por Prateleira", prateleiras_unicas, key="filtro_prateleira")
 
     # Botão para gerar relatório
     if st.button("Gerar Relatório Inventário", key="btn_gerar_relatorio"):
@@ -112,6 +121,7 @@ if uploaded_file:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key="download_saldos"
         )
+
 
 
 

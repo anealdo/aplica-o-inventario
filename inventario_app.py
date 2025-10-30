@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 from io import BytesIO
@@ -5,6 +6,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 from openpyxl.utils.dataframe import dataframe_to_rows
 
+
 st.title("Sistema de Inventário - Relatório Inventário")
 
 # Restaurar saldos físicos de arquivo
@@ -113,7 +115,7 @@ if uploaded_file:
             data=output_saldos.getvalue(),
             file_name="saldos_fisicos_atualizados.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )import streamlit as st
+        import streamlit as st
 import pandas as pd
 from io import BytesIO
 from openpyxl import Workbook
@@ -229,4 +231,5 @@ if uploaded_file:
             file_name="saldos_fisicos_atualizados.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
 

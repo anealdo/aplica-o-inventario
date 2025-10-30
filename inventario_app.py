@@ -52,6 +52,20 @@ if uploaded_file:
                 st.session_state.saldos_acumulados[produto_selecionado] = saldo_atual - quantidade_inserida
                 st.success(f"Saldo atualizado para {produto_selecionado}: {st.session_state.saldos_acumulados[produto_selecionado]}")
 
+    # Salvar saldos físicos atualizados
+if st.button("Baixar Saldos Físicos Atualizados"):
+    df_saldos = pd.DataFrame(list(st.session_state.saldos_acumulados.items()), columns=["IdentProduto", "SaldoFisico"])
+    output_saldos = BytesIO()
+    with pd.ExcelWriter(output_saldos, engine="openpyxl") as writer:
+        df_saldos.to_excel(writer, sheet_name="SaldosAcumulados", index=False)
+    output_saldos.seek(0)
+    st.download_button(
+        label="Baixar Saldos Físicos",
+        data=output_saldos.getvalue(),
+        file_name="saldos_fisicos_atualizados.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    
     # Botão para gerar relatório
     if st.button("Gerar Relatório Inventário"):
         df_relatorio = df_sistema.copy()
@@ -85,3 +99,4 @@ if uploaded_file:
             file_name="relatorio_inventario.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+

@@ -52,25 +52,15 @@ if uploaded_file:
                 st.session_state.saldos_acumulados[produto_selecionado] = saldo_atual - quantidade_inserida
                 st.success(f"Saldo atualizado para {produto_selecionado}: {st.session_state.saldos_acumulados[produto_selecionado]}")
 
-    # Salvar saldos físicos atualizados
-if st.button("Baixar Saldos Físicos Atualizados"):
-    df_saldos = pd.DataFrame(list(st.session_state.saldos_acumulados.items()), columns=["IdentProduto", "SaldoFisico"])
-    output_saldos = BytesIO()
-    with pd.ExcelWriter(output_saldos, engine="openpyxl") as writer:
-        df_saldos.to_excel(writer, sheet_name="SaldosAcumulados", index=False)
-    output_saldos.seek(0)
-    st.download_button(
-        label="Baixar Saldos Físicos",
-        data=output_saldos.getvalue(),
-        file_name="saldos_fisicos_atualizados.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    
     # Botão para gerar relatório
     if st.button("Gerar Relatório Inventário"):
         df_relatorio = df_sistema.copy()
         df_relatorio["SaldoFisico"] = df_relatorio["IdentProduto"].map(st.session_state.saldos_acumulados)
         df_relatorio["Divergencia"] = df_relatorio["SaldoFisico"] - df_relatorio["Quantidade"]
+
+        # Filtro opcional
+        if st.checkbox("Mostrar apenas produtos com divergência"):
+            df_relatorio = df_relatorio[df_relatorio["Divergencia"] != 0]
 
         st.subheader("Relatório Inventário")
         st.dataframe(df_relatorio)
@@ -80,10 +70,13 @@ if st.button("Baixar Saldos Físicos Atualizados"):
         ws = wb.active
         ws.title = "RelatorioInventario"
 
+        colunas = list(df_relatorio.columns)
+        idx_divergencia = colunas.index("Divergencia") + 1  # +1 pois openpyxl é 1-based
+
         for r_idx, row in enumerate(dataframe_to_rows(df_relatorio, index=False, header=True), 1):
             for c_idx, value in enumerate(row, 1):
                 cell = ws.cell(row=r_idx, column=c_idx, value=value)
-                if r_idx > 1 and ws.cell(row=1, column=c_idx).value == "Divergencia":
+                if r_idx > 1 and c_idx == idx_divergencia:
                     if value != 0:
                         cell.font = Font(color="FF0000")  # vermelho
                     else:
@@ -100,3 +93,16 @@ if st.button("Baixar Saldos Físicos Atualizados"):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
+    # Botão para baixar saldos físicos atualizados
+    if st.button("Baixar Saldos Físicos Atualizados"):
+        df_saldos = pd.DataFrame(list(st.session_state.saldos_acumulados.items()), columns=["IdentProduto", "SaldoFisico"])
+        output_saldos = BytesIO()
+        with pd.ExcelWriter(output_saldos, engine="openpyxl") as writer:
+            df_saldos.to_excel(writer, sheet_name="SaldosAcumulados", index=False)
+        output_saldos.seek(0)
+        st.download_button(
+            label="Baixar Saldos Físicos",
+            data=output_saldos.getvalue(),
+            file_name="saldos_fisicos_atualizados.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )

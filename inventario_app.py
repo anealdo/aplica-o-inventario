@@ -110,7 +110,7 @@ if uploaded_file:
         with pd.ExcelWriter(output_saldos, engine="openpyxl") as writer:
             df_saldos.to_excel(writer, sheet_name="SaldosAcumulados", index=False)
         output_saldos.seek(0)
-        st.download_button(
+        st.download_button()
             label="Baixar Saldos Físicos",
             data=output_saldos.getvalue(),
             file_name="saldos_fisicos_atualizados.xlsx",
@@ -231,5 +231,6 @@ if uploaded_file:
             file_name="saldos_fisicos_atualizados.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
 
 
